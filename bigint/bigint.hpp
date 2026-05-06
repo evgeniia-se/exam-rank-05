@@ -1,59 +1,73 @@
+#/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   bigint.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erazumov <erazumov@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/20 12:55:43 by erazumov          #+#    #+#             */
+/*   Updated: 2026/05/05 14:41:40 by erazumov         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef BIGINT_HPP
-#define BIGINT_HPP
+# define BIGINT_HPP
 
-#include <string>
-#include <iostream>
+# include <iostream>
+# include <vector>
+# include <algorithm>
 
-class bigint {
+class bigint
+{
 private:
-    std::string d;
+	std::vector<int>	_digits; // Digits are stored in reverse order: 1337 -> {7, 3, 3, 1}
 
-    // Внутренний метод для перевода числа обратно в size_t для сдвигов
-    size_t to_size_t() const;
+	/* --- Private Helper Methods --- */
+	void	_removeLeadingZeros(); // Remove leading zeros (e.g., 0042 -> 42)
+	int		_toInt() const; // Convert a small bigint to int (used for shifting logic)
 
 public:
-    // --- Ортодоксальная Каноническая Форма ---
-    bigint();
-    bigint(const bigint& other);
-    bigint& operator=(const bigint& other);
-    ~bigint();
+	/* --- Orthodox Canonical Form --- */
+	bigint();
+	bigint(unsigned long long n);
+	bigint(const bigint &copy);
+	bigint	&operator=(const bigint &other);
+	~bigint();
 
-    // --- Конструктор из числа ---
-    bigint(unsigned long long v);
+	/* --- Arithmetic Operators --- */
+	//arguments is obj
+	bigint	operator+(const bigint &other) const; // создается
+    //говое числло старые не затронуты
+	bigint	&operator+=(const bigint &other);// возвр ссылку на число
+    //ак как меняеся старое
 
-    // --- Арифметика ---
-    bigint& operator+=(const bigint& o);
-    bigint operator+(const bigint& o) const;
+	/* --- Increment --- */
+	bigint	&operator++();   // Prefix ++b
+	bigint	operator++(int); // Postfix b++
 
-    // --- Инкременты ---
-    bigint& operator++();       // Префиксный ++b
-    bigint operator++(int);     // Постфиксный b++
+	// Digitshift (Base 10 shifting)
+	bigint	operator<<(unsigned int n) const;
+	bigint	&operator<<=(unsigned int n);
+	bigint	operator>>(unsigned int n) const;
+	bigint	&operator>>=(unsigned int n);
 
-    // --- Сдвиги для чисел (size_t) ---
-    bigint& operator<<=(size_t shift);
-    bigint operator<<(size_t shift) const;
-    bigint& operator>>=(size_t shift);
-    bigint operator>>(size_t shift) const;
+	// Shift overloads to handle (d >>= (const bigint)2) from main
+	bigint	operator>>(const bigint &other) const;
+	bigint	&operator>>=(const bigint &other);
 
-    // --- Сдвиги для объектов (bigint) ---
-    bigint& operator<<=(const bigint& shift);
-    bigint operator<<(const bigint& shift) const;
-    bigint& operator>>=(const bigint& shift);
-    bigint operator>>(const bigint& shift) const;
+	/* --- Comparison --- */
+	bool	operator<(const bigint &other) const;
+	bool	operator<=(const bigint &other) const;
+	bool	operator>(const bigint &other) const;
+	bool	operator>=(const bigint &other) const;
+	bool	operator==(const bigint &other) const;
+	bool	operator!=(const bigint &other) const;
 
-    // --- Сравнения ---
-    bool operator==(const bigint& o) const;
-    bool operator!=(const bigint& o) const;
-    bool operator<(const bigint& o) const;
-    bool operator>(const bigint& o) const;
-    bool operator<=(const bigint& o) const;
-    bool operator>=(const bigint& o) const;
-
-    // --- Метод печати для потока вывода ---
-    void print(std::ostream& os) const;
+	/* --- Core Methods --- */
+	void	print(std::ostream &os) const;
 };
 
-// Внешний оператор вывода (без всяких friend)
-std::ostream& operator<<(std::ostream& os, const bigint& b);
+/* --- Output Stream --- */
+std::ostream &operator<<(std::ostream &os, const bigint &obj);
 
 #endif

@@ -1,136 +1,241 @@
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   bigint.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erazumov <erazumov@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/20 12:56:34 by erazumov          #+#    #+#             */
+/*   Updated: 2026/05/05 14:47:48 by erazumov         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "bigint.hpp"
-#include <algorithm>
 
-// === ОРТОДОКСАЛЬНАЯ КАНОНИЧЕСКАЯ ФОРМА ===
-bigint::bigint() : d("0") {}
+/* ------------------------- ORTHODOX CANONICAL FORM ------------------------ */
 
-bigint::bigint(const bigint& other) : d(other.d) {}
-
-bigint& bigint::operator=(const bigint& other) {
-    if (this != &other) {
-        d = other.d;
-    }
-    return *this;
+bigint::bigint()
+{
+	_digits.push_back(0);
 }
 
-bigint::~bigint() {}
+/* Ensures the number doesn't have unnecessary zeros at the end of the vector */
+//jast before we iverser le numb
+void bigint::_removeLeadingZeros()
+{
+	while (_digits.size() > 1 && _digits.back() == 0)
+	{
+		_digits.pop_back();
+	}
+}
+
+bigint::bigint(unsigned long long n)
+{
+	if (n == 0)
+		_digits.push_back(0);
+
+	while (n > 0)
+	{
+		_digits.push_back(n % 10);
+		n /= 10;
+	}
+    _removeLeadingZeros();
+}
+
+bigint::bigint(const bigint &copy) :
+	_digits(copy._digits)
+{}
+
+bigint
+&bigint::operator=(const bigint &other)
+{
+	if (this != &other)
+		this->_digits = other._digits;
+	return *this;
+}
+
+bigint::~bigint()
+{}
+
+/* ---------------------------- PRIVATE METHODS ----------------------------- */
 
 
-// === КОНСТРУКТОРЫ ===
-bigint::bigint(unsigned long long v) {
-    if (v == 0)
-		d = "0";
-    else {
-        while (v > 0) {
-			//write reverse number
-            d += (char)('0' + (v % 10));
-            v /= 10;
-        }
-    }
+
+/* Converts the bigint value to a native int (useful for shift amounts) */
+//write inverse
+int bigint::_toInt() const
+{
+	int	res = 0;
+	int	base = 1;
+
+	for (size_t i = 0; i < _digits.size(); i++)
+	{
+		res += _digits[i] * base;
+		base *= 10;
+	}
+	return res;
+}
+
+/* ----------------------------- PUBLIC METHODS ----------------------------- */
+
+/* --- Arithmetic --- */
+
+bigint &bigint::operator+=(const bigint &other)
+{
+	int	carry = 0;
+    //find larger size
+	size_t	n = std::max(_digits.size(), other._digits.size());
+	for (size_t i = 0; i < n || carry; ++i)
+	{
+		if (i == _digits.size())
+			_digits.push_back(0);
+
+		int	sum = _digits[i] + carry +
+					(i < other._digits.size() ? other._digits[i] : 0); //check amount of
+        //chiffre
+		_digits[i] = sum % 10;
+		carry = sum / 10;
+	}
+	return *this;
+}
+
+bigint bigint::operator+(const bigint &other) const
+{
+	bigint	res(*this);
+
+	res += other;
+	return res;
+}
+
+/* --- Increment --- */
+
+// Prefix increment
+bigint &bigint::operator++()
+{
+	return *this += 1;
+}
+
+// Postfix increment
+bigint bigint::operator++(int)
+{
+	bigint	tmp(*this);
+
+	++(*this);
+	return tmp;
+}
+
+/* --- Digitshift --- */
+
+bigint &bigint::operator<<=(unsigned int n)
+//moutation of numb (like +=)
+{
+	// Shifting 0 left results in 0
+	if (n > 0 && !(_digits.size() == 1 && _digits[0] == 0)) //1 numb
+	//in container and its 0
+	{
+		_digits.insert(_digits.begin(), n, 0);
+	}
+	return *this;
+}
+
+bigint bigint::operator<<(unsigned int n) const
+//new numb
+{
+	bigint	res(*this);
+
+	res <<= n;
+	return res;
 }
 
 
-// === УТИЛИТЫ ===
-size_t bigint::to_size_t() const {
-    size_t val = 0;
-    size_t mult = 1;
-    for (size_t i = 0; i < d.size(); ++i) {
-        val += (d[i] - '0') * mult;
-        mult *= 10;
-    }
-    return val;
+bigint &bigint::operator>>=(unsigned int n)
+{
+	if (n >= _digits.size())
+	{
+		_digits.clear();
+		_digits.push_back(0);
+	}
+	else
+	{
+		_digits.erase(_digits.begin(), _digits.begin() + n);
+	}
+	_removeLeadingZeros();
+	return *this;
 }
 
+bigint bigint::operator>>(unsigned int n) const
+{
+	bigint	res(*this);
 
-// === АРИФМЕТИКА ===
-bigint& bigint::operator+=(const bigint& o) {
-    int carry = 0;
-    size_t max_len = std::max(d.size(), o.d.size());
-    for (size_t i = 0; i < max_len || carry; ++i) {
-        if (i == d.size()) d += '0'; // Динамически расширяем строку, если нужно
-        int sum = (d[i] - '0') + carry;
-        if (i < o.d.size()) sum += o.d[i] - '0';
-        d[i] = (char)('0' + (sum % 10));
-        carry = sum / 10;
-    }
-    return *this;
+	res >>= n;
+	return res;
 }
 
-bigint bigint::operator+(const bigint& o) const {
-    bigint res(*this);
-    res += o;
-    return res;
+/* --- Overloads for bigint parameters --- */
+
+bigint &bigint::operator>>=(const bigint &other)
+{
+	return *this >>= other._toInt();
 }
 
-bigint& bigint::operator++() {
-    *this += bigint(1);
-    return *this;
+bigint bigint::operator>>(const bigint &other) const
+{
+	return *this >> other._toInt();
 }
 
-bigint bigint::operator++(int) {
-    bigint tmp(*this);
-    ++(*this);
-    return tmp;
+/* --- Comparison --- */
+
+bool bigint::operator==(const bigint &other) const
+{
+	return _digits == other._digits;
 }
 
-
-// === СДВИГИ (DIGITSHIFT) ===
-bigint& bigint::operator<<=(size_t shift) {
-    if (d != "0" && shift > 0) d.insert(0, shift, '0');
-    return *this;
+bool bigint::operator!=(const bigint &other) const
+{
+	return !(*this == other);
 }
 
-bigint bigint::operator<<(size_t shift) const {
-    bigint res(*this);
-    res <<= shift;
-    return res;
+bool bigint::operator<(const bigint &other) const
+{
+	if (_digits.size() != other._digits.size()) //по количеству цифр
+		return _digits.size() < other._digits.size();
+
+	for (int i = _digits.size() - 1; i >= 0; --i) //сравниваем кажду цифру с конца
+	{
+		if (_digits[i] != other._digits[i])
+			return _digits[i] < other._digits[i];
+	}
+	return false;
 }
 
-bigint& bigint::operator>>=(size_t shift) {
-    if (shift >= d.size()) d = "0";
-    else d.erase(0, shift);
-    return *this;
+bool bigint::operator<=(const bigint &other) const
+{
+	return *this < other || *this == other;
 }
 
-bigint bigint::operator>>(size_t shift) const {
-    bigint res(*this);
-    res >>= shift;
-    return res;
+bool bigint::operator>(const bigint &other) const
+{
+	return !(*this <= other);
 }
 
-bigint& bigint::operator<<=(const bigint& shift) { return *this <<= shift.to_size_t(); }
-bigint bigint::operator<<(const bigint& shift) const { return *this << shift.to_size_t(); }
-bigint& bigint::operator>>=(const bigint& shift) { return *this >>= shift.to_size_t(); }
-bigint bigint::operator>>(const bigint& shift) const { return *this >> shift.to_size_t(); }
-
-
-// === СРАВНЕНИЯ ===
-bool bigint::operator==(const bigint& o) const { return d == o.d; }
-bool bigint::operator!=(const bigint& o) const { return d != o.d; }
-
-bool bigint::operator<(const bigint& o) const {
-    if (d.size() != o.d.size()) return d.size() < o.d.size();
-    // Идем с конца строки (то есть со старших разрядов)
-    for (int i = (int)d.size() - 1; i >= 0; --i) {
-        if (d[i] != o.d[i]) return d[i] < o.d[i];
-    }
-    return false;
+bool bigint::operator>=(const bigint &other) const
+{
+	return !(*this < other);
 }
 
-bool bigint::operator>(const bigint& o) const { return o < *this; }
-bool bigint::operator<=(const bigint& o) const { return !(o < *this); }
-bool bigint::operator>=(const bigint& o) const { return !(*this < o); }
+/* ------------------------------ CORE METHODS ------------------------------ */
 
-
-// === ВЫВОД В ПОТОК ===
-void bigint::print(std::ostream& os) const {
-    // Безопасный цикл для C++98 с обычным int
-    for (int i = (int)d.size() - 1; i >= 0; --i) {
-        os << d[i];
-    }
+void bigint::print(std::ostream &os) const
+{
+	for (int i = _digits.size() - 1; i >= 0; --i)
+	{
+		os << _digits[i];
+	}
 }
 
-std::ostream& operator<<(std::ostream& os, const bigint& b) {
-    b.print(os);
-    return os;
+std::ostream &operator<<(std::ostream &os, const bigint &obj)
+{
+	obj.print(os);
+	return os;
 }
