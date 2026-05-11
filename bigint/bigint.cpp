@@ -8,7 +8,7 @@ bigint::bigint()
 }
 
 /* Ensures the number doesn't have unnecessary zeros at the end of the vector */
-//jast before we iverser le numb
+//jast before we inverser le numb
 void bigint::_removeLeadingZeros()
 {
 	while (_digits.size() > 1 && _digits.back() == 0)
@@ -27,7 +27,7 @@ bigint::bigint(unsigned long long n)
 		_digits.push_back(n % 10);
 		n /= 10;
 	}
-    _removeLeadingZeros();
+
 }
 
 bigint::bigint(const bigint &copy) :
@@ -74,7 +74,7 @@ bigint &bigint::operator+=(const bigint &other)
 	int	carry = 0;
     //find larger size
 	size_t	n = std::max(_digits.size(), other._digits.size());
-	for (size_t i = 0; i < n || carry; ++i)
+	for (size_t i = 0; i < n || carry; i++)
 	{
 		if (i == _digits.size())
 			_digits.push_back(0);
@@ -116,7 +116,6 @@ bigint bigint::operator++(int)
 /* --- Digitshift --- */
 
 bigint &bigint::operator<<=(unsigned int n)
-//moutation of numb (like +=)
 {
 	// Shifting 0 left results in 0
 	if (n > 0 && !(_digits.size() == 1 && _digits[0] == 0)) //1 numb
@@ -189,7 +188,7 @@ bool bigint::operator<(const bigint &other) const
 	if (_digits.size() != other._digits.size()) //по количеству цифр
 		return _digits.size() < other._digits.size();
 
-	for (int i = _digits.size() - 1; i >= 0; --i) //сравниваем кажду цифру с конца
+	for (int i = _digits.size() - 1; i >= 0; i--) //сравниваем кажду цифру с конца
 	{
 		if (_digits[i] != other._digits[i])
 			return _digits[i] < other._digits[i];
@@ -216,7 +215,7 @@ bool bigint::operator>=(const bigint &other) const
 
 void bigint::print(std::ostream &os) const
 {
-	for (int i = _digits.size() - 1; i >= 0; --i)
+	for (int i = _digits.size() - 1; i >= 0; i--)
 	{
 		os << _digits[i];
 	}
