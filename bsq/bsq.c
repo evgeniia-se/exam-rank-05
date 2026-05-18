@@ -32,9 +32,11 @@ void solve(FILE *fp) {
     for (int i = 0; i < rows; i++) {
         size_t cap = 0;
         int len = getline(&map[i], &cap, fp);
-        if (map[i][len - 1] == '\n') map[i][--len] = '\0'; // Убираем перенос строки
+        if (map[i][len - 1] == '\n') 
+			map[i][--len] = '\0'; // Убираем перенос строки
         
-        if (cols == -1) cols = len; // Узнаем ширину по первой строке
+        if (cols == -1) 
+			cols = len; // Узнаем ширину по первой строке
         dp[i] = malloc(sizeof(int) * cols);
 
         for (int j = 0; j < cols; j++) {
@@ -42,8 +44,10 @@ void solve(FILE *fp) {
                 dp[i][j] = 0;
             } else {
                 // Если это край — 1, иначе — минимум соседей + 1
-                if (i == 0 || j == 0) dp[i][j] = 1;
-                else dp[i][j] = get_min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1;
+                if (i == 0 || j == 0) 
+					dp[i][j] = 1;
+                else 
+					dp[i][j] = get_min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1;
 
                 // Запоминаем самый большой (первый найденный будет самым верхним/левым)
                 if (dp[i][j] > size) {
