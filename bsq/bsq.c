@@ -3,9 +3,14 @@
 
 // Минимум из трех чисел — ядро алгоритма
 int get_min(int a, int b, int c) {
-    if (a <= b && a <= c) return a;
-    if (b <= a && b <= c) return b;
-    return c;
+    int	min = a;
+
+	if (b < min)
+		min = b;
+	if (c < min)
+		min = c;
+
+	return (min);
 }
 
 void solve(FILE *fp) {
