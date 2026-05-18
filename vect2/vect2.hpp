@@ -15,23 +15,24 @@ class vect2{
         vect2(const vect2 &other);
         vect2 &operator=(const vect2 &other);
         ~vect2();
-
+//arithmetics
+        vect2 &operator+=(const vect2 &other);
+        vect2 operator+(const vect2 &other) const;
+        vect2 &operator-=(const vect2 &other);
+        vect2 operator-(const vect2 &other) const;
+        vect2 operator-() const;
+//increment
         vect2 &operator++();
         vect2 operator++(int);
         vect2 &operator--();
         vect2 operator--(int);
 
-        vect2 &operator+=(const vect2 &other);
-        vect2 operator+(const vect2 &other) const;
-        vect2 &operator-=(const vect2 &other);
-        vect2 operator-(const vect2 &other) const;  
-        vect2 operator-() const;
         vect2 &operator*=(int scalar);
         vect2 operator*(int scalar) const;
 
         bool operator==(const vect2 &other) const;
         bool operator!=(const vect2 &other) const;
-        int	&operator[](int i);          
+        int	&operator[](int i);
 	    const int	&operator[](int i) const;
 
 };
