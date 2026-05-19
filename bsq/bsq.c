@@ -66,7 +66,7 @@ void solve(FILE *fp) {
 
     // 4. Печать и очистка
     for (int i = 0; i < rows; i++) {
-        printf("%s\n", map[i]);
+        fprintf(stdout, "%s\n", map[i]);
         free(map[i]);
         free(dp[i]);
     }
